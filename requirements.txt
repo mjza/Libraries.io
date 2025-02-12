@@ -1,0 +1,4 @@
+requests
+python-dotenv
+colored
+psycopg2-binary
