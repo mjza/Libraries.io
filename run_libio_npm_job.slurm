@@ -22,8 +22,6 @@ else
     source "$VENV_DIR/bin/activate"
 fi
 
-####### Run Python Script #########################
-echo "🚀 [INFO] Running npm.py script..." | tee -a /work/barcomb_lab/Mahdi/Libraries.io/logs/job_output_$SLURM_JOB_ID.log
-python /work/barcomb_lab/Mahdi/Libraries.io/npm.py 2>&1 | tee -a /work/barcomb_lab/Mahdi/Libraries.io/logs/job_output_$SLURM_JOB_ID.log
-echo "✅ [SUCCESS] Script finished." | tee -a /work/barcomb_lab/Mahdi/Libraries.io/logs/job_output_$SLURM_JOB_ID.log
+####### Run your script #########################
+python /work/barcomb_lab/Mahdi/Libraries.io/npm.py 
  
