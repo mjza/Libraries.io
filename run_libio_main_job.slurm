@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=StackOverflowDump
+#SBATCH --job-name=LibioMAIN
 #SBATCH --output=/work/barcomb_lab/Mahdi/Libraries.io/logs/job_output_%j.log
 #SBATCH --error=/work/barcomb_lab/Mahdi/Libraries.io/logs/job_error_%j.log
 #SBATCH --time=7-00:00:00  # 7 days
