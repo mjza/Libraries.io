@@ -23,7 +23,7 @@ def print_progress(current, total, batch_number):
     bar_length = 50  # Progress bar length
     filled_length = int(bar_length * current // total) if total > 0 else 0
     bar = "█" * filled_length + "-" * (bar_length - filled_length)
-    print(f"\rBatch {batch_number}: |{bar}| {percent:.2f}% ({current}/{total}) Completed", flush=True)
+    print(f"\rBatch {batch_number}: |{bar}| {percent:.2f}% ({current}/{total}) Completed", end="", flush=True)
 
 def count_npm_packages():
     """Counts total NPM packages in the database."""
