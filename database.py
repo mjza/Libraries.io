@@ -95,24 +95,7 @@ def insert_projects(platform, projects):
                         latest_stable_release_number, latest_stable_release_published_at, versions, raw
                     ) VALUES (
                         %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
-                    ) ON CONFLICT (name, platform) DO UPDATE 
-                    SET description = EXCLUDED.description,
-                        homepage = EXCLUDED.homepage,
-                        language = EXCLUDED.language,
-                        repository_url = EXCLUDED.repository_url,
-                        package_manager_url = EXCLUDED.package_manager_url,
-                        rank = EXCLUDED.rank,
-                        stars = EXCLUDED.stars,
-                        forks = EXCLUDED.forks,
-                        keywords = EXCLUDED.keywords,
-                        funding_urls = EXCLUDED.funding_urls,
-                        normalized_licenses = EXCLUDED.normalized_licenses,
-                        latest_release_number = EXCLUDED.latest_release_number,
-                        latest_release_published_at = EXCLUDED.latest_release_published_at,
-                        latest_stable_release_number = EXCLUDED.latest_stable_release_number,
-                        latest_stable_release_published_at = EXCLUDED.latest_stable_release_published_at,
-                        versions = EXCLUDED.versions,
-                        raw = EXCLUDED.raw;
+                    ) ON CONFLICT (name, platform) DO NOTHING;
                 """, (
                     project["name"], platform, project.get("description"), project.get("homepage"),
                     project.get("language"), project.get("repository_url"), project.get("package_manager_url"),
