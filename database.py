@@ -95,7 +95,24 @@ def insert_projects(platform, projects):
                         latest_stable_release_number, latest_stable_release_published_at, versions, raw
                     ) VALUES (
                         %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
-                    ) ON CONFLICT (name, platform) DO NOTHING;
+                    ) ON CONFLICT (name, platform) DO UPDATE SET
+                        description = EXCLUDED.description,
+                        homepage = EXCLUDED.homepage,
+                        language = EXCLUDED.language,
+                        repository_url = EXCLUDED.repository_url,
+                        package_manager_url = EXCLUDED.package_manager_url,
+                        rank = EXCLUDED.rank,
+                        stars = EXCLUDED.stars,
+                        forks = EXCLUDED.forks,
+                        keywords = EXCLUDED.keywords,
+                        funding_urls = EXCLUDED.funding_urls,
+                        normalized_licenses = EXCLUDED.normalized_licenses,
+                        latest_release_number = EXCLUDED.latest_release_number,
+                        latest_release_published_at = EXCLUDED.latest_release_published_at,
+                        latest_stable_release_number = EXCLUDED.latest_stable_release_number,
+                        latest_stable_release_published_at = EXCLUDED.latest_stable_release_published_at,
+                        versions = EXCLUDED.versions,
+                        raw = EXCLUDED.raw;
                 """, (
                     project["name"], platform, project.get("description"), project.get("homepage"),
                     project.get("language"), project.get("repository_url"), project.get("package_manager_url"),
@@ -108,3 +125,47 @@ def insert_projects(platform, projects):
                 ))
             conn.commit()
 
+def count_npm_packages():
+    """Counts total NPM packages in the database."""
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT COUNT(*) FROM Projects 
+                WHERE platform = 'NPM' 
+                AND (
+                    jsonb_typeof(raw) = 'object' 
+                    AND (
+                        raw ? 'name' 
+                        AND 
+                        (SELECT COUNT(*) FROM jsonb_object_keys(raw)) = 1
+                    )
+                )
+                """)
+            total_packages = cur.fetchone()[0]
+            return total_packages
+
+# Fetch NPM package names from the database
+def get_npm_packages(batch_size=1000, offset=0):
+    """Fetches NPM package names in paginated batches from the database, 
+    where raw has only one property or its only property is 'name'."""
+    
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT name FROM Projects 
+                WHERE platform = 'NPM' 
+                AND (
+                    jsonb_typeof(raw) = 'object' 
+                    AND (
+                        raw ? 'name' 
+                        AND 
+                        (SELECT COUNT(*) FROM jsonb_object_keys(raw)) = 1
+                    )
+                )
+                ORDER BY name 
+                LIMIT %s OFFSET %s;
+                """,
+                (batch_size, offset)
+            )
+            return [row[0] for row in cur.fetchall()]
