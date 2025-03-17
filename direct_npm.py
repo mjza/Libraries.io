@@ -58,7 +58,7 @@ def clean_json_data(npm_data):
     """Ensure JSON data is sanitized for storage."""
     try:
         json_string = json.dumps(npm_data, ensure_ascii=True)
-        return json_string.replace("\u0000", "")  # Remove null characters
+        return json_string.replace("\u0000", "").encode("utf-8", "ignore").decode("utf-8")  # Remove null characters
     except (TypeError, ValueError):
         return "{}"  # Return empty JSON string if there's an issue
 
@@ -106,7 +106,7 @@ def update_database(updates):
     """
     clean_updates = [(
         project_id, description, homepage, repository_url, latest_release_number,
-        latest_release_published_at, raw.replace("\u0000", "") if raw else "{}"
+        latest_release_published_at, raw.replace("\u0000", "").encode("utf-8", "ignore").decode("utf-8") if raw else "{}"
     ) for project_id, description, homepage, repository_url, latest_release_number, latest_release_published_at, raw in updates]
     execute_values(cursor, query, clean_updates)
     conn.commit()
