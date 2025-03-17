@@ -30,7 +30,11 @@ def fetch_npm_data(package_name):
     try:
         response = requests.get(url, timeout=5)
         if response.status_code == 200:
-            return response.json()
+            try:
+                return response.json()  # Ensure response is valid JSON
+            except json.JSONDecodeError:
+                print(f"Invalid JSON response for {package_name}")
+                return None
         else:
             print(f"Failed to fetch {package_name}: HTTP {response.status_code}")
             return None
