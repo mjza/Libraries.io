@@ -54,6 +54,14 @@ def parse_timestamp(timestamp):
             return None
     return None
 
+def clean_json_data(npm_data):
+    """Ensure JSON data is sanitized for storage."""
+    try:
+        json_string = json.dumps(npm_data, ensure_ascii=True)
+        return json_string.replace("\\u0000", "")  # Remove null characters
+    except (TypeError, ValueError):
+        return "{}"  # Return empty JSON string if there's an issue
+
 def extract_data(npm_data):
     """Extract relevant fields from NPM response."""
     if not isinstance(npm_data, dict):
@@ -79,7 +87,7 @@ def extract_data(npm_data):
         "repository_url": repository_url,
         "latest_release_number": latest_release_number,
         "latest_release_published_at": latest_release_published_at,
-        "raw": json.dumps(npm_data)  # Convert JSON to string to store in DB
+        "raw": clean_json_data(npm_data)  # Sanitize JSON before storage
     }
 
 def update_database(updates):
