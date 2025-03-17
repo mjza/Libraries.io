@@ -1,3 +1,4 @@
+import json
 import requests
 import psycopg2
 from psycopg2.extras import execute_values
@@ -96,6 +97,7 @@ def process_batches():
         updates = []
         for project_id, package_name in projects:
             npm_data = fetch_npm_data(package_name)
+            print(npm_data)
             if npm_data:
                 extracted_data = extract_data(npm_data)
                 if extracted_data:
