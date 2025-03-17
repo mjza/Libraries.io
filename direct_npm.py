@@ -1,10 +1,10 @@
-import json
 import requests
 import psycopg2
 from psycopg2.extras import execute_values
 import time
 from dotenv import load_dotenv
 import os
+import json
 
 # Load environment variables
 load_dotenv()
@@ -49,7 +49,13 @@ def extract_data(npm_data):
         print("Unexpected response format, skipping entry.")
         return None
 
-    repository_url = npm_data.get("repository", {}).get("url", None)
+    repository_data = npm_data.get("repository", {})
+    repository_url = None
+    if isinstance(repository_data, str):  # Handle case where 'repository' is a string
+        repository_url = repository_data
+    elif isinstance(repository_data, dict):
+        repository_url = repository_data.get("url")
+
     if repository_url and repository_url.startswith("git+"):
         repository_url = repository_url[4:]  # Remove "git+"
 
@@ -97,7 +103,6 @@ def process_batches():
         updates = []
         for project_id, package_name in projects:
             npm_data = fetch_npm_data(package_name)
-            print(npm_data)
             if npm_data:
                 extracted_data = extract_data(npm_data)
                 if extracted_data:
