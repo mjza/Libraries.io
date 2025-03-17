@@ -65,7 +65,7 @@ def extract_data(npm_data):
         "repository_url": repository_url,
         "latest_release_number": npm_data.get("dist-tags", {}).get("latest"),
         "latest_release_published_at": npm_data.get("time", {}).get(npm_data.get("dist-tags", {}).get("latest")),
-        "raw": npm_data  # Store full JSON response for future reference
+        "raw": json.dumps(npm_data)  # Convert JSON to string to store in DB
     }
 
 def update_database(updates):
@@ -78,7 +78,7 @@ def update_database(updates):
             repository_url = COALESCE(data.repository_url, p.repository_url),
             latest_release_number = COALESCE(data.latest_release_number, p.latest_release_number),
             latest_release_published_at = COALESCE(data.latest_release_published_at, p.latest_release_published_at),
-            raw = COALESCE(data.raw, p.raw)
+            raw = COALESCE(data.raw::jsonb, p.raw)
         FROM (VALUES %s) AS data(id, description, homepage, repository_url, latest_release_number, latest_release_published_at, raw)
         WHERE p.id = data.id;
     """
