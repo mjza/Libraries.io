@@ -128,19 +128,25 @@ def process_batches():
 
         updates = []
         for project_id, package_name in projects:
-            npm_data = fetch_npm_data(package_name)
-            if npm_data:
-                extracted_data = extract_data(npm_data)
-                if extracted_data:
-                    updates.append((
-                        project_id, extracted_data["description"], extracted_data["homepage"],
-                        extracted_data["repository_url"], extracted_data["latest_release_number"],
-                        extracted_data["latest_release_published_at"], extracted_data["raw"]
-                    ))
+            try:
+                npm_data = fetch_npm_data(package_name)
+                if npm_data:
+                    extracted_data = extract_data(npm_data)
+                    if extracted_data:
+                        updates.append((
+                            project_id, extracted_data["description"], extracted_data["homepage"],
+                            extracted_data["repository_url"], extracted_data["latest_release_number"],
+                            extracted_data["latest_release_published_at"], extracted_data["raw"]
+                        ))
+            except:
+                pass
 
         if updates:
-            update_database(updates)
-            print(f"Updated {len(updates)} projects.")
+            try:
+                update_database(updates)
+                print(f"Updated {len(updates)} projects.")
+            except:
+                pass
 
         offset += BATCH_SIZE
         time.sleep(2)  # Avoid API rate limits
