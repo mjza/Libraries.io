@@ -31,12 +31,19 @@ def fetch_npm_data(package_name):
         response = requests.get(url, timeout=5)
         if response.status_code == 200:
             return response.json()
+        else:
+            print(f"Failed to fetch {package_name}: HTTP {response.status_code}")
+            return None
     except requests.RequestException as e:
         print(f"Error fetching {package_name}: {e}")
-    return None
+        return None
 
 def extract_data(npm_data):
     """Extract relevant fields from NPM response."""
+    if not isinstance(npm_data, dict):
+        print("Unexpected response format, skipping entry.")
+        return None
+
     repository_url = npm_data.get("repository", {}).get("url", None)
     if repository_url and repository_url.startswith("git+"):
         repository_url = repository_url[4:]  # Remove "git+"
@@ -87,11 +94,12 @@ def process_batches():
             npm_data = fetch_npm_data(package_name)
             if npm_data:
                 extracted_data = extract_data(npm_data)
-                updates.append((
-                    project_id, extracted_data["description"], extracted_data["homepage"],
-                    extracted_data["repository_url"], extracted_data["latest_release_number"],
-                    extracted_data["latest_release_published_at"], extracted_data["raw"]
-                ))
+                if extracted_data:
+                    updates.append((
+                        project_id, extracted_data["description"], extracted_data["homepage"],
+                        extracted_data["repository_url"], extracted_data["latest_release_number"],
+                        extracted_data["latest_release_published_at"], extracted_data["raw"]
+                    ))
 
         if updates:
             update_database(updates)
