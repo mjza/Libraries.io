@@ -5,6 +5,7 @@ import time
 from dotenv import load_dotenv
 import os
 import json
+from datetime import datetime
 
 # Load environment variables
 load_dotenv()
@@ -43,6 +44,16 @@ def fetch_npm_data(package_name):
         print(f"Error fetching {package_name}: {e}")
         return None
 
+def parse_timestamp(timestamp):
+    """Convert timestamp string to datetime object."""
+    if timestamp:
+        try:
+            return datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
+        except ValueError:
+            print(f"Invalid timestamp format: {timestamp}")
+            return None
+    return None
+
 def extract_data(npm_data):
     """Extract relevant fields from NPM response."""
     if not isinstance(npm_data, dict):
@@ -59,12 +70,15 @@ def extract_data(npm_data):
     if repository_url and repository_url.startswith("git+"):
         repository_url = repository_url[4:]  # Remove "git+"
 
+    latest_release_number = npm_data.get("dist-tags", {}).get("latest")
+    latest_release_published_at = parse_timestamp(npm_data.get("time", {}).get(latest_release_number))
+
     return {
         "description": npm_data.get("description"),
         "homepage": npm_data.get("homepage"),
         "repository_url": repository_url,
-        "latest_release_number": npm_data.get("dist-tags", {}).get("latest"),
-        "latest_release_published_at": npm_data.get("time", {}).get(npm_data.get("dist-tags", {}).get("latest")),
+        "latest_release_number": latest_release_number,
+        "latest_release_published_at": latest_release_published_at,
         "raw": json.dumps(npm_data)  # Convert JSON to string to store in DB
     }
 
@@ -77,7 +91,7 @@ def update_database(updates):
             homepage = COALESCE(data.homepage, p.homepage),
             repository_url = COALESCE(data.repository_url, p.repository_url),
             latest_release_number = COALESCE(data.latest_release_number, p.latest_release_number),
-            latest_release_published_at = COALESCE(data.latest_release_published_at, p.latest_release_published_at),
+            latest_release_published_at = COALESCE(data.latest_release_published_at::timestamp, p.latest_release_published_at),
             raw = COALESCE(data.raw::jsonb, p.raw)
         FROM (VALUES %s) AS data(id, description, homepage, repository_url, latest_release_number, latest_release_published_at, raw)
         WHERE p.id = data.id;
